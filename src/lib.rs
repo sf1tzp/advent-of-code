@@ -13,5 +13,10 @@ pub fn read_input() -> io::Result<String> {
 
     reader.read_to_string(&mut input)?;
 
+    // Remove Trailing Newline
+    if input.ends_with('\n') {
+        input.pop();
+    }
+
     Ok(input)
 }

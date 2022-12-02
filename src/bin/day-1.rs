@@ -29,11 +29,6 @@ fn main() {
 
 // Split the input on blank lines, then parse each elf's inventory
 fn take_inventory(mut input: String) -> Vec<Elf> {
-    // Remove Trailing Newline
-    if input.ends_with('\n') {
-        input.pop();
-    }
-
     // Can't decide how I feel about this code. But it was fun to write, kinda :)
     let inventory: Vec<Elf> = input
         .split("\n\n")
