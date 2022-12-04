@@ -28,7 +28,7 @@ fn main() {
 }
 
 // Split the input on blank lines, then parse each elf's inventory
-fn take_inventory(mut input: String) -> Vec<Elf> {
+fn take_inventory(input: String) -> Vec<Elf> {
     // Can't decide how I feel about this code. But it was fun to write, kinda :)
     let inventory: Vec<Elf> = input
         .split("\n\n")
