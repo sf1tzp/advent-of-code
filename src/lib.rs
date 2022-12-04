@@ -4,6 +4,16 @@ use std::{
     io::{self, BufReader, Read},
 };
 
+pub static ASCII_LOWERCASE: [char; 26] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+    't', 'u', 'v', 'w', 'x', 'y', 'z',
+];
+
+pub static ASCII_UPPERCASE: [char; 26] = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
+    'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+];
+
 pub fn read_input() -> io::Result<String> {
     let input_path = env::var("INPUT_PATH").expect("INPUT_PATH not defined");
     let file = File::open(&input_path).expect(&format!("Input file {} not found", input_path));
