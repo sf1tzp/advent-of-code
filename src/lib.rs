@@ -4,6 +4,13 @@ use std::{
     io::{self, BufReader, Read},
 };
 
+extern crate aoc_runner;
+
+#[macro_use]
+extern crate aoc_runner_derive;
+
+pub mod day1;
+
 pub static ASCII_LOWERCASE: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
     't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -30,3 +37,5 @@ pub fn read_input() -> io::Result<String> {
 
     Ok(input)
 }
+
+aoc_lib! { year = 2022 }

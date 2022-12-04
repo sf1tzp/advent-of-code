@@ -1,11 +1,13 @@
 set dotenv-load
 
 # Start a new challenge
-new-day NUMBER:
-    touch src/bin/day-{{NUMBER}}.rs
-    curl -o inputs/day-{{NUMBER}}.txt -b "session=$SESSION" https://adventofcode.com/2022/day/{{NUMBER}}/input
+new-day-bin NUMBER:
+    touch src/day{{NUMBER}}.rs
+    cargo aoc input -d {{NUMBER}} -y 2022
 
 # Run a submission
 run NUMBER:
-    INPUT_PATH="inputs/day-{{NUMBER}}.txt" \
-    cargo run --bin day-{{NUMBER}}
+    cargo aoc -d {{NUMBER}}
+
+bench NUMBER:
+    cargo aoc bench -d {{NUMBER}}
