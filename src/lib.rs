@@ -12,6 +12,7 @@ extern crate aoc_runner_derive;
 pub mod day1;
 pub mod day2;
 pub mod day3;
+pub mod day4;
 
 pub static ASCII_LOWERCASE: [char; 26] = [
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
