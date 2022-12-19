@@ -2,7 +2,6 @@ use regex::Regex;
 
 use crate::ASCII_UPPERCASE;
 
-
 type Stack = Vec<char>;
 
 #[derive(Debug, Clone)]
@@ -40,9 +39,24 @@ impl Harbor {
         }
     }
 
-    pub fn perform(&mut self, instruction: &Instruction) {
+    // a Hanoi Move moves items one at a time from the source to destination stack
+    pub fn perform_hanoi_move(&mut self, instruction: &Instruction) {
         for _ in 0..instruction.quantity {
             let content = self.stacks[instruction.source].pop().unwrap();
+            self.stacks[instruction.destination].push(content);
+        }
+    }
+
+    // a Lift and Shift preserves the original ordering of items while moving them from the source to desination stack
+    pub fn perform_lift_and_shift(&mut self, instruction: &Instruction) {
+        let mut lifted = Stack::default();
+        for _ in 0..instruction.quantity {
+            let content = self.stacks[instruction.source].pop().unwrap();
+            lifted.push(content);
+        }
+
+        while ! lifted.is_empty() {
+            let content = lifted.pop().unwrap();
             self.stacks[instruction.destination].push(content);
         }
     }
@@ -107,7 +121,23 @@ fn solve_part1(input: &(Harbor, Vec<Instruction>)) -> String {
     let mut harbor = harbor.clone(); // Cargo AOC only passes input as immutable, so we need to make a clone to work with
 
     for instruction in instructions.iter() {
-        harbor.perform(instruction);
+        harbor.perform_hanoi_move(instruction);
+    }
+
+    let output = harbor.stacks.iter().map(|stack| {
+        stack[stack.len() - 1]
+    }).collect::<String>();
+
+    output
+}
+
+#[aoc(day5, part2)]
+fn solve_part2(input: &(Harbor, Vec<Instruction>)) -> String {
+    let (harbor, instructions) = input;
+    let mut harbor = harbor.clone(); // Cargo AOC only passes input as immutable, so we need to make a clone to work with
+
+    for instruction in instructions.iter() {
+        harbor.perform_lift_and_shift(instruction);
     }
 
     let output = harbor.stacks.iter().map(|stack| {
