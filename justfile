@@ -1,13 +1,23 @@
 set dotenv-load
 
-# Start a new challenge
-new-day-bin NUMBER:
-    touch src/day{{NUMBER}}.rs
-    cargo aoc input -d {{NUMBER}} -y 2022
+# Display this help
+default:
+    @just --list --unsorted
 
-# Run a submission
-run NUMBER:
-    cargo aoc -d {{NUMBER}}
+# Start a new solution
+new DAY:
+    @just input {{DAY}}
+    touch src/day{{DAY}}.rs
 
-bench NUMBER:
-    cargo aoc bench -d {{NUMBER}}
+# Run a solution
+run DAY:
+    cargo aoc -d {{DAY}}
+
+# Benchmark a solution
+benchmark DAY:
+    cargo aoc bench -d {{DAY}} -g
+
+# Download input (Done automatically with new)
+input DAY:
+    cargo aoc input -y 2022 -d {{DAY}}
+
