@@ -117,12 +117,9 @@ impl fmt::Debug for TreeFarm {
 impl TreeFarm {
     pub fn count_visible_trees(&self) -> usize {
         let mut count = 0;
-        for row_index in 0..=self.size.rows {
-            for column_index in 0..=self.size.columns {
-                let location = (row_index, column_index);
-                if self.plots[&location].visible_from_outside {
-                    count += 1;
-                }
+        for (_, tree) in self.plots.iter() {
+            if tree.visible_from_outside {
+                count += 1;
             }
         }
         count
@@ -140,6 +137,11 @@ impl TreeFarm {
                 highest_seen = tree_height;
                 self.plots.get_mut(&location).unwrap().visible_from_outside = true;
             }
+
+            // In this scenario 9 is the highest possible tree, so we can short circuit here
+            if highest_seen == 9 {
+                break
+            }
         }
     }
 
@@ -154,6 +156,11 @@ impl TreeFarm {
             if i == 0 || tree_height > highest_seen {
                 highest_seen = tree_height;
                 self.plots.get_mut(&location).unwrap().visible_from_outside = true;
+            }
+
+            // In this scenario 9 is the highest possible tree, so we can short circuit here
+            if highest_seen == 9 {
+                break
             }
         }
     }
