@@ -69,7 +69,7 @@ fn solve_part1(input: &TreeFarm) -> usize {
     count
 }
 
-#[aoc(day8, part2)]
+#[aoc(day8, part2, four_iterators_per_loc)]
 fn solve_part2(input: &TreeFarm) -> usize {
     // println!("{}", input);
     let mut high_score = 0;
@@ -83,6 +83,22 @@ fn solve_part2(input: &TreeFarm) -> usize {
     high_score
 }
 
+#[aoc(day8, part2, two_iterators_per_loc)]
+// This is actually 10x slower 😅 🤔
+fn solve_part2_2(input: &TreeFarm) -> usize {
+    // println!("{}", input);
+    let mut high_score = 0;
+    for (location, _) in input.plots.iter() {
+        let score = input.base_visibility_score_2(location);
+        if high_score < score {
+            high_score = score;
+        }
+    }
+
+    high_score
+}
+
+#[allow(unused_must_use)]
 impl fmt::Display for TreeFarm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row_index in 0..=self.size.rows {
@@ -96,6 +112,7 @@ impl fmt::Display for TreeFarm {
     }
 }
 
+#[allow(unused_must_use)]
 // Debug displays the heights of visible trees, and '-' for obscured ones.
 impl fmt::Debug for TreeFarm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -140,7 +157,7 @@ impl TreeFarm {
 
             // In this scenario 9 is the highest possible tree, so we can short circuit here
             if highest_seen == 9 {
-                break
+                break;
             }
         }
     }
@@ -160,7 +177,7 @@ impl TreeFarm {
 
             // In this scenario 9 is the highest possible tree, so we can short circuit here
             if highest_seen == 9 {
-                break
+                break;
             }
         }
     }
@@ -223,6 +240,91 @@ impl TreeFarm {
         }
 
         // println!("location {:?} score {}", location, score);
+        score
+    }
+
+    #[allow(clippy::comparison_chain)]
+    pub fn base_visibility_score_2(&self, location: &(usize, usize)) -> usize {
+        let base_row = location.0;
+        let base_column = location.1;
+        let base_height = self.plots[location].height;
+        let mut score = 1; // Start at 1, we will *= this in the loops
+
+        // If the base location is on the edge of the forest, the score is 0
+        if base_row == 0
+            || base_row == self.size.rows
+            || base_column == 0
+            || base_column == self.size.columns
+        {
+            return 0;
+        }
+
+        // Score Vertical
+        let mut visibility_distance = base_row;
+        let range = 0..=self.size.rows;
+        for row_index in range {
+            // println!("row index {row_index}");
+            if row_index < base_row {
+                if self.plots[&(row_index, base_column)].height < base_height {
+                    continue;
+                }
+                visibility_distance = base_row - row_index;
+                // println!("Found blocker at {row_index}. New distance {visibility_distance}");
+            } else if row_index == base_row {
+                // println!("reached base, score {} *= {}", score, visibility_distance);
+                // Reset tracker
+                score *= visibility_distance;
+                visibility_distance = self.size.rows - base_row;
+                // println!("reset distance {visibility_distance}");
+            } else if row_index > base_row && row_index < self.size.rows {
+                if self.plots[&(row_index, base_column)].height < base_height {
+                    continue;
+                }
+                visibility_distance = row_index - base_row;
+                // println!("Found blocker at {row_index}, {score} *= {visibility_distance}");
+                score *= visibility_distance;
+                break;
+            } else if row_index == self.size.rows {
+                // println!("reached limit, {score} *= {visibility_distance}");
+                score *= visibility_distance;
+            } else {
+                continue;
+            }
+        }
+
+        // Score Horizontal
+        let mut visibility_distance = base_column;
+        let range = 0..=self.size.columns;
+        for column_index in range {
+            // println!("column index {column_index}");
+            if column_index < base_column {
+                if self.plots[&(base_row, column_index)].height < base_height {
+                    continue;
+                }
+                visibility_distance = base_column - column_index;
+                // println!("Found blocker at {column_index}. New distance {visibility_distance}");
+            } else if column_index == base_column {
+                // println!("reached base, score {} *= {}", score, visibility_distance);
+                // Reset tracker
+                score *= visibility_distance;
+                visibility_distance = self.size.columns - base_column;
+                // println!("reset distance {visibility_distance}");
+            } else if column_index > base_column && column_index < self.size.columns {
+                if self.plots[&(base_row, column_index)].height < base_height {
+                    continue;
+                }
+                visibility_distance = column_index - base_column;
+                // println!("Found blocker at {column_index}, {score} *= {visibility_distance}");
+                score *= visibility_distance;
+                break;
+            } else if column_index == self.size.columns {
+                // println!("reached limit, {score} *= {visibility_distance}");
+                score *= visibility_distance;
+            } else {
+                continue;
+            }
+        }
+
         score
     }
 }
