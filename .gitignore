@@ -1,6 +1,6 @@
 .env
 input/
-inputs/
+samples/
 
 # Added by cargo
 

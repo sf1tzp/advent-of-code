@@ -1,12 +1,26 @@
-# 🎄 Advent of Code 🖥 2022 🎁
+# [🎄 Advent of Code 🖥 2022 🎁][advent-of-code-link]
 
 It's that time of year again! 🎁 🖥 🎄
 
-## Project Set Up
+## Log In
 
-This year I'll mainly be using rust. `src/lib.rs` contains any re-usable bits such as reading input from a file. Each solution will then be written in a in `src/bin/day-##.rs` file.
+You must set the `AOC_SESSION_TOKEN` environment variable in order to download input. You can find your session token after logging in to the [Advent Of Code website][advent-of-code-link]. Open the inspector, and copy the value of the `session` cookie. Then run
 
-In the spirit of Rustmas I've added two `just` targets here to help speed things along:
+`export AOC_SESSION_TOKEN="<session cookie value>"`
 
-- `new-day ##` creates a new file in `src/bin`. Grab the `session` cookie from adventofcode.com and save it in a `.env` file so that `just` can retreive the day's input.
-- `run ##` sources the input file and runs the binary for a given day.
+## Commands
+
+This project uses [`cargo-aoc`][cargo-aoc-link] to run and benchmark solutions. The included [`justfile`][just-link] contains shortcuts for most commands in `bash`.
+
+```
+Advent of Code 2022 Commands
+    login             # Login to Advent of Code (Use AOC_SESSION_TOKEN environment variable)
+    new DAY           # Start a new solution for day number DAY
+    run DAY           # Run the solution for day number DAY
+    run-sample DAY    # Run a solution with a sample input file (place in `samples/2022/day{{DAY}}.txt`)
+    run-benchmark DAY # Benchmark the solution for day number DAY
+```
+
+[advent-of-code-link]: https://adventofcode.com/2022/
+[cargo-aoc-link]: https://github.com/gobanos/cargo-aoc
+[just-link]: https://github.com/casey/just
