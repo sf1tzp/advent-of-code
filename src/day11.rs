@@ -28,7 +28,7 @@ struct Monkey {
 }
 
 impl Monkey {
-    fn run_turn(&mut self) -> VecDeque<(usize, usize)> {
+    fn run_turn(&mut self, worry_factor: Option<f64>, lcm: usize) -> VecDeque<(usize, usize)> {
         let mut item_updates = VecDeque::<(usize, usize)>::new();
         while !self.items.is_empty() {
             let item_score = self.items.pop_front().unwrap();
@@ -42,7 +42,16 @@ impl Monkey {
                     Magnitude::SameAsBefore => item_score * item_score,
                 },
             };
-            let item_score = (item_score as f64 / 3.0).floor() as usize;
+
+            let item_score = match worry_factor {
+                Some(n) => (item_score as f64 / n).floor() as usize,
+                None => {
+                    // Item score may be huge, so mod it against the lcm
+                    // This still allows us to select the correct target
+                    // because the lcm is a multiple of the test value
+                    item_score % lcm
+                },
+            };
 
             let target = match item_score % self.test_value == 0 {
                 true => self.true_target,
@@ -83,6 +92,7 @@ impl MonkeyBusinessTracker {
         }
     }
 
+    #[allow(dead_code)]
     fn print_items(&self) {
         for (monkey_id, monkey) in self.monkeys.iter() {
             println!("Monkey {}: {:?}", monkey_id, monkey.items);
@@ -91,7 +101,11 @@ impl MonkeyBusinessTracker {
 
     fn print_inspections(&self) {
         for monkey_id in self.inspection_counts.keys().sorted() {
-            println!("Monkey {} has inspected {:?} items", monkey_id, self.inspection_counts.get(monkey_id).unwrap());
+            println!(
+                "Monkey {} has inspected {:?} items",
+                monkey_id,
+                self.inspection_counts.get(monkey_id).unwrap()
+            );
         }
     }
 
@@ -103,6 +117,15 @@ impl MonkeyBusinessTracker {
             .rev()
             .take(n)
             .copied()
+            .product()
+    }
+
+    // Calculate the least common multiple of all the test values
+    // This allows us to select targets without worrying about overflow
+    fn get_lcm(&self) -> usize {
+        self.monkeys
+            .values()
+            .map(|monkey| monkey.test_value)
             .product()
     }
 }
@@ -178,20 +201,52 @@ fn parse_input(input: &str) -> HashMap<usize, Monkey> {
 
 #[aoc(day11, part1)]
 fn solve_part1(input: &HashMap<usize, Monkey>) -> usize {
+    let rounds = 20;
+    let worry_factor = Some(3.0);
+    let monkey_business_factor = 2;
+
     let mut tracker = MonkeyBusinessTracker::new_from_input(input.clone());
-    tracker.print_items();
-    // run 20 rounds
-    for i in 0..20 {
+    let lcm = tracker.get_lcm();
+    // tracker.print_items();
+    for i in 0..rounds {
         println!("Round {}", i + 1);
         for monkey_id in 0..tracker.monkeys.len() {
             let item_count = tracker.monkeys.get(&monkey_id).unwrap().items.len();
             tracker.update_activity(monkey_id, item_count);
             let monkey = tracker.monkeys.get_mut(&monkey_id).unwrap();
-            let updates = monkey.run_turn();
+            let updates = monkey.run_turn(worry_factor, lcm);
             tracker.update_items(updates);
         }
-        tracker.print_items();
+        // tracker.print_items();
     }
     tracker.print_inspections();
-    tracker.calculate(2)
+    tracker.calculate(monkey_business_factor)
+}
+
+#[aoc(day11, part2)]
+fn solve_part2(input: &HashMap<usize, Monkey>) -> usize {
+    let rounds = 10_000;
+    let worry_factor = None;
+    let monkey_business_factor = 2;
+    let debug_rounds: Vec<i32> = vec![
+        1, 20, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+    ];
+
+    let mut tracker = MonkeyBusinessTracker::new_from_input(input.clone());
+    let lcm = tracker.get_lcm();
+    for i in 0..rounds {
+        for monkey_id in 0..tracker.monkeys.len() {
+            let item_count = tracker.monkeys.get(&monkey_id).unwrap().items.len();
+            tracker.update_activity(monkey_id, item_count);
+            let monkey = tracker.monkeys.get_mut(&monkey_id).unwrap();
+            let updates = monkey.run_turn(worry_factor, lcm);
+            tracker.update_items(updates);
+        }
+        if debug_rounds.contains(&(i + 1)) {
+            println!("Round {}", i + 1);
+            // tracker.print_items();
+            tracker.print_inspections();
+        }
+    }
+    tracker.calculate(monkey_business_factor)
 }
