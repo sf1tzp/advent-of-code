@@ -33,6 +33,7 @@ new DAY:
         just _get-input {{DAY}}
     fi
     touch src/day{{DAY}}.rs
+    sed -i "s/\/\/ pub mod day{{DAY}};/pub mod day{{DAY}};/" src/lib.rs
 
 # Run the solution for day number DAY
 run DAY: _ensure-input
