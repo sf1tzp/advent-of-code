@@ -47,7 +47,7 @@ run-sample DAY: _ensure-input
         echo "Sample input file $file not found"
         exit
     fi
-    @cargo aoc -i samples/2022/day{{DAY}}.txt -d {{DAY}}
+    cargo aoc -i samples/2022/day{{DAY}}.txt -d {{DAY}}
 
 # Benchmark the solution for day number DAY
 run-benchmark DAY: _ensure-input
