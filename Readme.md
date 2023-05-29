@@ -24,3 +24,22 @@ Advent of Code 2022 Commands
 [advent-of-code-link]: https://adventofcode.com/2022/
 [cargo-aoc-link]: https://github.com/gobanos/cargo-aoc
 [just-link]: https://github.com/casey/just
+
+
+## Benchmarks
+
+`cargo-aoc` benchmarks `generator` functions, which parse the project input, and `solution` functions, which contain the actual problem solving logic.
+
+| Day | Generator | Part 1 | Part 2 |
+| --- | --- | --- | ---|
+| 1 | 65.570 us | 1.8305 ns | 1.8369 ns |
+| 2 | N/A | 103.17 us | 93.106 us |
+| 3 | 32.975 us | 144.37 us | 146.60 us |
+| 4 | 109.79 us | 626.89 ns | 511.09 ns |
+| 5 | 163.05 us | 3.8378 us | 14.640 us |
+| 6 | N/A | 97.679 us | 198.96 us |
+| 7 | | | |
+| 8 | 311.41 us | 271.94 us | 1.7155 ms |
+| 9 | | | |
+| 10 | | | |
+| 11 | 1.0665 ms | 30.342 us | 13.337 ms |

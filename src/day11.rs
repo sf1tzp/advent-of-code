@@ -99,6 +99,7 @@ impl MonkeyBusinessTracker {
         }
     }
 
+    #[allow(dead_code)]
     fn print_inspections(&self) {
         for monkey_id in self.inspection_counts.keys().sorted() {
             println!(
@@ -145,7 +146,7 @@ fn capture_numbers(line: &str) -> Result<Vec<usize>> {
 fn capture_operation(line: &str) -> Result<(Operation, Magnitude)> {
     let re = Regex::new(r"(\*|\+) (old|\d+)").unwrap();
     let captures = re.captures(line).unwrap();
-    println!("parsing op from line {}: {:?}", line, captures);
+    // println!("parsing op from line {}: {:?}", line, captures);
 
     if captures.len() != 3 {
         return Err(anyhow!(
@@ -209,7 +210,7 @@ fn solve_part1(input: &HashMap<usize, Monkey>) -> usize {
     let lcm = tracker.get_lcm();
     // tracker.print_items();
     for i in 0..rounds {
-        println!("Round {}", i + 1);
+        // println!("Round {}", i + 1);
         for monkey_id in 0..tracker.monkeys.len() {
             let item_count = tracker.monkeys.get(&monkey_id).unwrap().items.len();
             tracker.update_activity(monkey_id, item_count);
@@ -219,7 +220,7 @@ fn solve_part1(input: &HashMap<usize, Monkey>) -> usize {
         }
         // tracker.print_items();
     }
-    tracker.print_inspections();
+    // tracker.print_inspections();
     tracker.calculate(monkey_business_factor)
 }
 
@@ -243,9 +244,9 @@ fn solve_part2(input: &HashMap<usize, Monkey>) -> usize {
             tracker.update_items(updates);
         }
         if debug_rounds.contains(&(i + 1)) {
-            println!("Round {}", i + 1);
+            // println!("Round {}", i + 1);
             // tracker.print_items();
-            tracker.print_inspections();
+            // tracker.print_inspections();
         }
     }
     tracker.calculate(monkey_business_factor)
