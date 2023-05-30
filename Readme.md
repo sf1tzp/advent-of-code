@@ -39,7 +39,8 @@ Advent of Code 2022 Commands
 | 5 | 163.05 us | 3.8378 us | 14.640 us |
 | 6 | N/A | 97.679 us | 198.96 us |
 | 7 | | | |
-| 8 | 311.41 us | 271.94 us | 1.7155 ms |
+| 8 | 311.41 us | 271.94 us (four iterators per loc) | 1.7155 ms |
 | 9 | | | |
 | 10 | | | |
 | 11 | 1.0665 ms | 30.342 us | 13.337 ms |
+| 12 | 242.74 us | 2.1069 ms (priority queue) | |
