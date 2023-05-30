@@ -1,3 +1,5 @@
+#![allow(non_upper_case_globals)]
+
 use std::{
     cmp::Reverse,
     collections::{HashMap, HashSet},
@@ -5,6 +7,11 @@ use std::{
 };
 
 use priority_queue::PriorityQueue;
+
+const a_ASCII: usize = 97;
+const z_ASCII: usize = 122;
+const S_ASCII: usize = 83;
+const E_ASCII: usize = 69;
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
 struct Point {
@@ -49,11 +56,6 @@ impl TopographicMap {
 
     #[allow(non_snake_case)]
     fn locate_start_and_end(&mut self) {
-        let S_ASCII: usize = 83;
-        let E_ASCII: usize = 69;
-        let a_ASCII: usize = 97;
-        let z_ASCII: usize = 122;
-
         for i in 0..self.height {
             for j in 0..self.width {
                 let point = Point { x: j, y: i };
@@ -146,34 +148,32 @@ impl TopographicMap {
         path.iter().rev().copied().collect()
     }
 
-    fn shortest_path_priority_queue(&self) -> Vec<Point> {
-        let start = self.start;
-        let end = self.end;
-
+    fn shortest_path_priority_queue(&self, start: Point, end: Point) -> Option<Vec<Point>> {
         let mut queue = PriorityQueue::<Point, Reverse<usize>>::new(); // Use Reverse here to ensure that the queue behaves like a min-heap
         let mut distance_map = HashMap::<Point, usize>::new();
-        let mut previous_point = HashMap::<Point, Option<Point>>::new();
+        let mut previous_points = HashMap::<Point, Option<Point>>::new();
 
         queue.push(start, Reverse(0));
         distance_map.entry(start).or_insert(0);
-        previous_point.entry(start).or_insert(None);
+        previous_points.entry(start).or_insert(None);
 
         while !queue.is_empty() {
-            let (current_point, _)  = queue.pop().unwrap(); // Pops the lowest distance point from the queue since we used Reverse
+            let (current_point, _) = queue.pop().unwrap(); // Pops the lowest distance point from the queue since we used Reverse
 
             if current_point == end {
-                break;
+                return path_map_to_vec(&mut previous_points, start, end);
             }
 
-            let neighbors = self.get_neighbors(&current_point);
+            let current_distance = *distance_map.get(&current_point).unwrap();
+            let new_distance = current_distance + 1;
+
+            let neighbors: Vec<Point> = self.get_neighbors(&current_point)
+                .iter()
+                .filter(|p| self.is_point_selectable(&current_point, p))
+                .copied()
+                .collect();
+
             for neighbor in neighbors.into_iter() {
-                if !self.is_point_selectable(&current_point, &neighbor) {
-                    continue;
-                }
-
-                let current_distance = distance_map.entry(current_point).or_insert(0);
-                let new_distance = *current_distance + 1;
-
                 if !distance_map.contains_key(&neighbor) || new_distance < distance_map[&neighbor] {
                     queue.push(neighbor, Reverse(new_distance));
 
@@ -182,26 +182,14 @@ impl TopographicMap {
                         .and_modify(|d| *d = new_distance)
                         .or_insert(new_distance);
 
-                    previous_point
+                    previous_points
                         .entry(neighbor)
                         .and_modify(|p| *p = Some(current_point))
                         .or_insert(Some(current_point));
                 }
             }
         }
-
-        // Traverse previous backwards to get the path
-        let mut path = vec![];
-        let mut current = end;
-        while current != start {
-            path.push(current);
-            current = previous_point
-                .entry(current)
-                .or_insert(Some(Point { x: 0, y: 0 }))
-                .unwrap();
-        }
-        path.push(start);
-        path.iter().rev().copied().collect()
+        None
     }
 
     // only get the adjacent points, no diagonals allowed.
@@ -325,23 +313,47 @@ impl fmt::Display for TopographicMap {
     }
 }
 
+fn path_map_to_vec(path_map: &mut HashMap<Point, Option<Point>>, start: Point, end: Point) -> Option<Vec<Point>> {
+    // Traverse previous backwards to get the path
+    let mut path = vec![];
+    let mut current = end;
+    while current != start {
+        path.push(current);
+        current = path_map
+            .entry(current)
+            .or_insert(Some(Point { x: 0, y: 0 }))
+            .unwrap();
+    }
+    // path.push(start); // don't include the start point
+    Some(path.iter().rev().copied().collect())
+}
+
 #[aoc_generator(day12)]
 fn parse_input(input: &str) -> TopographicMap {
     TopographicMap::new_from_input(input)
 }
 
-// #[aoc(day12, part1, slow)] // About 400 ms to solve, too slow to benchmark
-// fn solve_part1(map: &TopographicMap) -> usize {
-//     let path = map.shortest_path_a_star();
-//     // print!("{}", map);
-//     // map.print_path(&path);
-//     path.len() - 1
-// }
-
-#[aoc(day12, part1, priority_queue)]
-fn solve_part1_priority_queue(map: &TopographicMap) -> usize {
-    let path = map.shortest_path_priority_queue();
+#[aoc(day12, part1, slow)] // About 400 ms to solve, too slow to benchmark
+fn solve_part1(map: &TopographicMap) -> usize {
+    let path = map.shortest_path_a_star();
     // print!("{}", map);
     // map.print_path(&path);
     path.len() - 1
+}
+
+#[aoc(day12, part1, priority_queue)]
+fn solve_part1_priority_queue(map: &TopographicMap) -> usize {
+    let path = map.shortest_path_priority_queue(map.start, map.end);
+    path.unwrap().len()
+}
+
+#[aoc(day12, part2)]
+fn solve_part2(input: &TopographicMap) -> usize {
+    input.map.iter()
+        .filter(|(_, &height)| height == a_ASCII)
+        .map(|(point, _)| *point)
+        .filter_map(|point| input.shortest_path_priority_queue(point, input.end))
+        .map(|path| path.len())
+        .min()
+        .unwrap()
 }
