@@ -64,9 +64,8 @@ fn solve_part1(input: &TreeFarm) -> usize {
         input.visible_trees_in_col(column_index, false);
     }
 
-    let count = input.count_visible_trees();
     // println!("{:?}", input);
-    count
+    input.count_visible_trees()
 }
 
 #[aoc(day8, part2, four_iterators_per_loc)]
@@ -106,7 +105,7 @@ impl fmt::Display for TreeFarm {
                 let location = (row_index, column_index);
                 write!(f, "{}", self.plots[&location].height);
             }
-            write!(f, "\n");
+            writeln!(f);
         }
         Ok(())
     }
@@ -125,7 +124,7 @@ impl fmt::Debug for TreeFarm {
                     write!(f, "-");
                 }
             }
-            write!(f, "\n");
+            writeln!(f);
         }
         Ok(())
     }

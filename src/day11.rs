@@ -209,7 +209,7 @@ fn solve_part1(input: &HashMap<usize, Monkey>) -> usize {
     let mut tracker = MonkeyBusinessTracker::new_from_input(input.clone());
     let lcm = tracker.get_lcm();
     // tracker.print_items();
-    for i in 0..rounds {
+    for _ in 0..rounds {
         // println!("Round {}", i + 1);
         for monkey_id in 0..tracker.monkeys.len() {
             let item_count = tracker.monkeys.get(&monkey_id).unwrap().items.len();

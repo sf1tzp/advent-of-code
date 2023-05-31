@@ -39,7 +39,7 @@ fn solve_part2(input: &str) -> usize {
 }
 
 fn parse_play(play: &str) -> Result<Play, Error> {
-    let play = play.chars().nth(0).unwrap();
+    let play = play.chars().next().unwrap();
     match play {
         'A' => Ok(Play::Rock),
         'B' => Ok(Play::Paper),
@@ -51,6 +51,7 @@ fn parse_play(play: &str) -> Result<Play, Error> {
     }
 }
 
+#[allow(clippy::identity_op)]
 fn derive_score(our_move: Play, their_move: Play) -> usize {
     match (our_move, their_move) {
         (Play::Rock, Play::Rock) => our_move as usize + 3,
@@ -68,7 +69,7 @@ fn derive_score(our_move: Play, their_move: Play) -> usize {
 }
 
 fn parse_plan(plan: &str) -> Result<Outcome, Error> {
-    let plan = plan.chars().nth(0).unwrap();
+    let plan = plan.chars().next().unwrap();
     match plan {
         'X' => Ok(Outcome::Lose),
         'Y' => Ok(Outcome::Draw),

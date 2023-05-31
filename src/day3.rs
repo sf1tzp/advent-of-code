@@ -74,11 +74,11 @@ fn solve_part2(input: &[Backpack]) -> Priority {
 
 fn check_priority(item: char) -> anyhow::Result<Priority> {
     if ASCII_LOWERCASE.contains(&item) {
-        return Ok(item as usize - 96);
+        Ok(item as usize - 96)
     } else if ASCII_UPPERCASE.contains(&item) {
-        return Ok(item as usize - 38);
+        Ok(item as usize - 38)
     } else {
-        return Err(anyhow!("invalid item"));
+        Err(anyhow!("invalid item"))
     }
 }
 

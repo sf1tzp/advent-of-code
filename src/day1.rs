@@ -14,7 +14,7 @@ pub fn get_calorie_counts(input: &str) -> Vec<Calories> {
                 .split('\n')
                 .map(|food| {
                     food.parse::<Calories>()
-                        .expect(&format!("failed to parse calories from {}", food))
+                        .unwrap_or_else(|_| panic!("failed to parse calories from {}", food))
                 })
                 .collect(),
         })

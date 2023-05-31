@@ -167,6 +167,7 @@ impl TopographicMap {
             let current_distance = *distance_map.get(&current_point).unwrap();
             let new_distance = current_distance + 1;
 
+            #[allow(clippy::needless_collect)]
             let neighbors: Vec<Point> = self.get_neighbors(&current_point)
                 .iter()
                 .filter(|p| self.is_point_selectable(&current_point, p))

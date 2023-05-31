@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 extern crate aoc_runner;
 
 #[macro_use]
