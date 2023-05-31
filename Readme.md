@@ -44,3 +44,4 @@ Advent of Code 2022 Commands
 | 10 | | | |
 | 11 | 1.0665 ms | 30.342 µs | 13.337 ms |
 | 12 | 242.74 µs | 2.1069 ms (priority queue) | 294.280 ms |
+| 13 | 2.4084 ms | 7.5608 µs | 226.06 µs |

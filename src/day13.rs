@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, vec};
 use std::cmp::Ordering;
 
 use anyhow::{anyhow, Result};
@@ -215,6 +215,27 @@ fn solve_part1(packets: &[(Packet, Packet)]) -> usize {
         }
     }
     count
+}
+
+#[aoc(day13, part2)]
+fn solve_part2(packets: &[(Packet, Packet)]) -> usize {
+    let mut packets = packets.iter()
+        .flat_map(|(p1, p2)| vec![p1, p2])
+        .collect::<Vec<&Packet>>();
+    let dividers = vec![
+        Packet::read("[[2]]").unwrap(),
+        Packet::read("[[6]]").unwrap(),
+    ];
+    packets.extend(dividers.iter());
+    packets.sort();
+
+    let mut key = 1;
+    for (i, packet) in packets.iter().enumerate() {
+        if dividers.contains(packet) {
+            key *= i + 1;
+        }
+    }
+    key
 }
 
 #[cfg(test)]
