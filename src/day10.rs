@@ -15,7 +15,7 @@ struct CpuEmulator {
     z_register: isize, // I downloaded this extra ram
 
     breakpoints: Vec<usize>,
-    debug_callback: Option<Box<dyn FnMut(&mut Self)>>,
+    debug_callback: Option<Box<dyn Fn(&mut Self)>>,
 }
 
 impl CpuEmulator {
@@ -48,7 +48,7 @@ impl CpuEmulator {
         self.breakpoints = breakpoints;
     }
 
-    fn set_debug_callback(&mut self, callback: Box<dyn FnMut(&mut Self)>) {
+    fn set_debug_callback(&mut self, callback: Box<dyn Fn(&mut Self)>) {
         self.debug_callback = Some(callback);
     }
 
@@ -56,7 +56,8 @@ impl CpuEmulator {
     fn step(&mut self) {
         self.program_counter += 1;
         if self.breakpoints.contains(&self.program_counter) && self.debug_callback.is_some() {
-            let cb = self.debug_callback.as_mut().unwrap();
+            // fixme: How to call the callback against self without borrowing self twice?
+            let cb = self.debug_callback.unwrap();
             cb(self);
         }
     }
