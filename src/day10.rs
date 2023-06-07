@@ -6,9 +6,75 @@ enum Instruction {
     Add(char, isize),
 }
 
-struct Cpu {
-    program_counter: isize,
-    x_register: isize,
+struct CpuEmulator {
+    program_counter: usize,
+    program: Vec<Instruction>,
+
+    x_register: isize, // x register from input
+    y_register: isize, // signal strength accumulator (part 1)
+    z_register: isize, // I downloaded this extra ram
+
+    breakpoints: Vec<usize>,
+    debug_callback: Option<Box<dyn FnMut(&mut Self)>>,
+}
+
+impl CpuEmulator {
+    fn new() -> Self {
+        CpuEmulator {
+            program_counter: 0,
+            program: vec![],
+
+            x_register: 0,
+            y_register: 0,
+            z_register: 0,
+
+            breakpoints: vec![],
+            debug_callback: None,
+        }
+    }
+
+    fn execute(&mut self, program: Vec<Instruction>) {
+        self.program = program;
+        self.program_counter = 0;
+        while self.program_counter < self.program.len() as usize {
+            match self.program[self.program_counter] {
+                Instruction::NoOp => self.noop(),
+                Instruction::Add(register, value) => self.add(register, value),
+            }
+        }
+    }
+
+    fn set_breakpoints(&mut self, breakpoints: Vec<usize>) {
+        self.breakpoints = breakpoints;
+    }
+
+    fn set_debug_callback(&mut self, callback: Box<dyn FnMut(&mut Self)>) {
+        self.debug_callback = Some(callback);
+    }
+
+    // Step increments the CPU's program counter and optionally runs a callback if there is a breakpoint at the current program counter.
+    fn step(&mut self) {
+        self.program_counter += 1;
+        if self.breakpoints.contains(&self.program_counter) && self.debug_callback.is_some() {
+            let cb = self.debug_callback.as_mut().unwrap();
+            cb(self);
+        }
+    }
+
+    fn noop(&mut self) {
+        self.step();
+    }
+
+    fn add(&mut self, register: char, value: isize) {
+        self.step();
+        self.step();
+        match register {
+            'x' => self.x_register += value,
+            'y' => self.y_register += value,
+            'z' => self.z_register += value,
+            _ => panic!("Invalid register: {}", register),
+        }
+    }
 }
 
 fn parse_instruction(instruction: &str) -> Result<Instruction> {
@@ -46,39 +112,25 @@ fn parse_input(input: &str) -> Vec<Instruction> {
         .collect::<Vec<Instruction>>()
 }
 
+fn foo(cpu: &mut CpuEmulator) {
+    let strength = cpu.x_register * cpu.program_counter as isize;
+    cpu.y_register += strength;
+    println!(
+        "pc: {}, x: {}, strength {}, accumulated: {}",
+        cpu.program_counter, cpu.x_register, strength, cpu.y_register
+    );
+}
+
 #[aoc(day10, part1)]
 #[allow(clippy::ptr_arg)]
 fn solve_part1(instructions: &Vec<Instruction>) -> isize {
-    let mut cpu = Cpu {
-        program_counter: 0,
-        x_register: 1,
-    };
-    let mut signal_strength_sum = 0;
+    let mut cpu = CpuEmulator::new();
 
-    fn debug_signal(cpu: &Cpu) -> isize {
-        let checkpoints = vec![20, 60, 100, 140, 180, 220];
-        if checkpoints.contains(&cpu.program_counter) {
-            println!("pc: {}, x: {}", cpu.program_counter, cpu.x_register);
-            return cpu.x_register * cpu.program_counter;
-        }
-        0
-    }
+    cpu.set_breakpoints(vec![20, 60, 100, 140, 180, 220]);
+    cpu.set_debug_callback(Box::new(foo));
 
-    for instruction in instructions {
-        cpu.program_counter += 1;
-        signal_strength_sum += debug_signal(&cpu);
-
-        match instruction {
-            Instruction::NoOp => {},
-            Instruction::Add(_, value) => {
-                cpu.program_counter += 1;
-                signal_strength_sum += debug_signal(&cpu);
-                cpu.x_register += value;
-            }
-        }
-    }
-
-    signal_strength_sum
+    cpu.execute(instructions.clone());
+    0
 }
 
 #[cfg(test)]
