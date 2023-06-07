@@ -71,9 +71,9 @@ fn solve_part1(instructions: &Vec<Instruction>) -> isize {
         match instruction {
             Instruction::NoOp => {},
             Instruction::Add(_, value) => {
-                cpu.x_register += value;
                 cpu.program_counter += 1;
                 signal_strength_sum += debug_signal(&cpu);
+                cpu.x_register += value;
             }
         }
     }
