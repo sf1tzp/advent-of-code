@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use anyhow::{anyhow, Result};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -7,68 +9,82 @@ enum Instruction {
 }
 
 struct CpuEmulator {
+    clock_counter: usize,
+
+    // Registers
+    x_register: isize,
+    y_register: isize,
+    z_register: isize,
+
+    // Program memory
+    program: VecDeque<Instruction>,
     program_counter: usize,
-    program: Vec<Instruction>,
 
-    x_register: isize, // x register from input
-    y_register: isize, // signal strength accumulator (part 1)
-    z_register: isize, // I downloaded this extra ram
+    // Debugging features!
+    // Run code at a specific clock tick or program step
+    checkpoints: Vec<usize>, // Clock ticks at which to run the debug callback
+    clock_debug_callback: fn(&mut Self),
 
-    breakpoints: Vec<usize>,
-    debug_callback: Option<Box<dyn Fn(&mut Self)>>,
+    breakpoints: Vec<usize>, // Program steps at which to run the debug callback
+    program_debug_callback: fn(&mut Self),
 }
 
 impl CpuEmulator {
     fn new() -> Self {
         CpuEmulator {
-            program_counter: 0,
-            program: vec![],
+            clock_counter: 0,
 
             x_register: 0,
             y_register: 0,
             z_register: 0,
 
+            program_counter: 0,
+            program: VecDeque::new(),
+
+            checkpoints: vec![],
+            clock_debug_callback: |_| {},
             breakpoints: vec![],
-            debug_callback: None,
+            program_debug_callback: |_| {},
         }
     }
 
-    fn execute(&mut self, program: Vec<Instruction>) {
-        self.program = program;
+    // Step increments the CPU's program counter and
+    // optionally runs a callback if there is a breakpoint at the current program counter.
+    fn clock_tick(&mut self) {
+        self.clock_counter += 1;
+
+        if self.checkpoints.contains(&self.clock_counter) {
+            (self.clock_debug_callback)(self);
+        }
+    }
+
+    fn run(&mut self, program: &[Instruction]) {
         self.program_counter = 0;
-        while self.program_counter < self.program.len() as usize {
-            match self.program[self.program_counter] {
+        self.program = VecDeque::from(program.to_owned());
+
+        // Pop instructions off the program memory and execute them until the program memory is empty.
+        // This avoids having to borrow self mutably twice (ie, once with iter and then with the operations)
+        while let Some(i) = self.program.pop_front() {
+            self.program_counter += 1;
+
+            if self.breakpoints.contains(&self.program_counter) {
+                (self.program_debug_callback)(self);
+            }
+
+            match i {
                 Instruction::NoOp => self.noop(),
                 Instruction::Add(register, value) => self.add(register, value),
             }
         }
     }
 
-    fn set_breakpoints(&mut self, breakpoints: Vec<usize>) {
-        self.breakpoints = breakpoints;
-    }
-
-    fn set_debug_callback(&mut self, callback: Box<dyn Fn(&mut Self)>) {
-        self.debug_callback = Some(callback);
-    }
-
-    // Step increments the CPU's program counter and optionally runs a callback if there is a breakpoint at the current program counter.
-    fn step(&mut self) {
-        self.program_counter += 1;
-        if self.breakpoints.contains(&self.program_counter) && self.debug_callback.is_some() {
-            // fixme: How to call the callback against self without borrowing self twice?
-            let cb = self.debug_callback.unwrap();
-            cb(self);
-        }
-    }
-
     fn noop(&mut self) {
-        self.step();
+        self.clock_tick();
     }
 
     fn add(&mut self, register: char, value: isize) {
-        self.step();
-        self.step();
+        self.clock_tick();
+        self.clock_tick();
         match register {
             'x' => self.x_register += value,
             'y' => self.y_register += value,
@@ -113,25 +129,31 @@ fn parse_input(input: &str) -> Vec<Instruction> {
         .collect::<Vec<Instruction>>()
 }
 
-fn foo(cpu: &mut CpuEmulator) {
-    let strength = cpu.x_register * cpu.program_counter as isize;
-    cpu.y_register += strength;
-    println!(
-        "pc: {}, x: {}, strength {}, accumulated: {}",
-        cpu.program_counter, cpu.x_register, strength, cpu.y_register
-    );
-}
-
 #[aoc(day10, part1)]
-#[allow(clippy::ptr_arg)]
-fn solve_part1(instructions: &Vec<Instruction>) -> isize {
+fn solve_part1(program: &[Instruction]) -> isize {
     let mut cpu = CpuEmulator::new();
 
-    cpu.set_breakpoints(vec![20, 60, 100, 140, 180, 220]);
-    cpu.set_debug_callback(Box::new(foo));
+    cpu.x_register = 1; // Starts at one per the problem statement
 
-    cpu.execute(instructions.clone());
-    0
+    cpu.checkpoints = vec![20, 60, 100, 140, 180, 220]; // Clock ticks at which to check the signal
+    cpu.clock_debug_callback = |cpu| {
+        let strength = cpu.x_register * cpu.clock_counter as isize;
+        cpu.y_register += strength;
+    };
+
+    // We could also run steps at specific program counters instead of clock ticks
+    // Eg, Display the state of the CPU at the end of the program
+    // cpu.breakpoints = vec![program.len()];
+    // cpu.program_debug_callback = |cpu| {
+    //     println!("Program counter: {}", cpu.program_counter);
+    //     println!("X register: {}", cpu.x_register);
+    //     println!("Y register: {}", cpu.y_register);
+    //     println!("Z register: {}", cpu.z_register);
+    // };
+
+    cpu.run(program);
+
+    cpu.y_register
 }
 
 #[cfg(test)]

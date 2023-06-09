@@ -30,18 +30,18 @@ Advent of Code 2022 Commands
 
 `cargo-aoc` benchmarks `generator` functions, which parse the project input, and `solution` functions, which contain the actual problem solving logic.
 
-| Day | Generator | Part 1 | Part 2 |
-| --- | --- | --- | ---|
-| 1 | 65.570 µs | 1.8305 ns | 1.8369 ns |
-| 2 | N/A | 103.17 µs | 93.106 µs |
-| 3 | 32.975 µs | 144.37 µs | 146.60 µs |
-| 4 | 109.79 µs | 626.89 ns | 511.09 ns |
-| 5 | 163.05 µs | 3.8378 µs | 14.640 µs |
-| 6 | N/A | 97.679 µs | 198.96 µs |
-| 7 | | | |
-| 8 | 311.41 µs | 271.94 µs (four iterators per loc) | 1.7155 ms |
-| 9 | | | |
-| 10 | | | |
-| 11 | 1.0665 ms | 30.342 µs | 13.337 ms |
-| 12 | 242.74 µs | 2.1069 ms (priority queue) | 294.280 ms |
-| 13 | 2.4084 ms | 7.5608 µs | 226.06 µs |
+| Day | Generator | Part 1                             | Part 2     |
+| --- | --------- | ---------------------------------- | ---------- |
+| 1   | 65.570 µs | 1.8305 ns                          | 1.8369 ns  |
+| 2   | N/A       | 103.17 µs                          | 93.106 µs  |
+| 3   | 32.975 µs | 144.37 µs                          | 146.60 µs  |
+| 4   | 109.79 µs | 626.89 ns                          | 511.09 ns  |
+| 5   | 163.05 µs | 3.8378 µs                          | 14.640 µs  |
+| 6   | N/A       | 97.679 µs                          | 198.96 µs  |
+| 7   |           |                                    |            |
+| 8   | 311.41 µs | 271.94 µs (four iterators per loc) | 1.7155 ms  |
+| 9   |           |                                    |            |
+| 10  | 15.589 µs | 1.4743 µs                          |            |
+| 11  | 1.0665 ms | 30.342 µs                          | 13.337 ms  |
+| 12  | 242.74 µs | 2.1069 ms (priority queue)         | 294.280 ms |
+| 13  | 2.4084 ms | 7.5608 µs                          | 226.06 µs  |
