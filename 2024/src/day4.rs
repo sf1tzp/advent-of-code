@@ -24,6 +24,19 @@ enum Direction {
     UpLeft,
 }
 
+fn get_next_point(direction: &Direction, current_point: (usize, usize)) -> (usize, usize) {
+    match direction {
+        Direction::Up => return (current_point.0 - 1, current_point.1),
+        Direction::UpRight => return (current_point.0 - 1, current_point.1 + 1),
+        Direction::Right => return (current_point.0, current_point.1 + 1),
+        Direction::DownRight => return (current_point.0 + 1, current_point.1 + 1),
+        Direction::Down => return (current_point.0 + 1, current_point.1),
+        Direction::DownLeft => return (current_point.0 + 1, current_point.1 - 1),
+        Direction::Left => return (current_point.0, current_point.1 - 1),
+        Direction::UpLeft => return (current_point.0 - 1, current_point.1 - 1),
+    }
+}
+
 impl WordSearch {
     fn find(&self, starting_point: (usize, usize), word: &str) -> Result<usize> {
         let mut total = 0;
@@ -103,19 +116,52 @@ impl WordSearch {
                 }
             };
 
-            match direction {
-                Direction::Up => current_point = (current_point.0 - 1, current_point.1),
-                Direction::UpRight => current_point = (current_point.0 - 1, current_point.1 + 1),
-                Direction::Right => current_point = (current_point.0, current_point.1 + 1),
-                Direction::DownRight => current_point = (current_point.0 + 1, current_point.1 + 1),
-                Direction::Down => current_point = (current_point.0 + 1, current_point.1),
-                Direction::DownLeft => current_point = (current_point.0 + 1, current_point.1 - 1),
-                Direction::Left => current_point = (current_point.0, current_point.1 - 1),
-                Direction::UpLeft => current_point = (current_point.0 - 1, current_point.1 - 1),
-            }
+            current_point = get_next_point(&direction, current_point);
         }
 
         true
+    }
+
+    fn find_cross(&self, starting_point: (usize, usize), word: &str) -> Result<bool> {
+        let mut total = 0;
+        let word: Vec<char> = word.chars().collect();
+
+        // to form an X the word must be odd in length
+        assert!(word.len() % 2 != 0);
+        // find the character in the middle
+        let pivot = word[word.len() / 2];
+
+        match self.grid.get(&starting_point) {
+            None => return Err(anyhow!("invalid starting location")),
+            Some(c) => {
+                if c != &pivot {
+                    return Ok(false);
+                }
+            }
+        }
+
+        // move to top right and search down-left
+        let p = get_next_point(&Direction::UpRight, starting_point);
+        if self.search_direction(Direction::DownLeft, p, &word) {
+            total += 1;
+        }
+        // move to top left and search down-right
+        let p = get_next_point(&Direction::UpLeft, starting_point);
+        if self.search_direction(Direction::DownRight, p, &word) {
+            total += 1;
+        }
+        // move to bottom right and search up-left
+        let p = get_next_point(&Direction::DownRight, starting_point);
+        if self.search_direction(Direction::UpLeft, p, &word) {
+            total += 1;
+        }
+        // move to bottom left and search up-right
+        let p = get_next_point(&Direction::DownLeft, starting_point);
+        if self.search_direction(Direction::UpRight, p, &word) {
+            total += 1;
+        }
+
+        Ok(total == 2)
     }
 }
 
@@ -156,4 +202,39 @@ fn solve_part1(input: &WordSearch) -> usize {
         }
     }
     total
+}
+
+#[aoc(day4, part2)]
+fn solve_part2(input: &WordSearch) -> usize {
+    let mut total = 0;
+    let word = "MAS";
+    for row_index in 0..input.size.rows {
+        for colum_index in 0..input.size.columns {
+            let location = (row_index, colum_index);
+
+            // println!("Searching from location {:?}", location);
+            match input.find_cross(location, word) {
+                Ok(found) => {
+                    if found {
+                        total += 1;
+                    }
+                }
+                Err(e) => panic!("WTF {e}"),
+            }
+        }
+    }
+    total
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_int_division() {
+        assert_eq!(3 / 2, 1);
+        assert_eq!(5 / 2, 2);
+        let word = vec!['M', 'A', 'S'];
+        let pivot = word[word.len() / 2];
+        assert_eq!(pivot, 'A');
+    }
 }
