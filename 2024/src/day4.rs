@@ -1,44 +1,11 @@
-use std::collections::HashMap;
+use crate::grid::{get_next_point, Direction, Grid};
 
 use anyhow::{anyhow, Result};
 
-#[derive(Debug)]
-struct Dimensions {
-    rows: usize,
-    columns: usize,
-}
-
-struct WordSearch {
-    size: Dimensions,
-    grid: HashMap<(usize, usize), char>,
-}
-
-enum Direction {
-    Up,
-    UpRight,
-    Right,
-    DownRight,
-    Down,
-    DownLeft,
-    Left,
-    UpLeft,
-}
-
-fn get_next_point(direction: &Direction, current_point: (usize, usize)) -> (usize, usize) {
-    match direction {
-        Direction::Up => return (current_point.0 - 1, current_point.1),
-        Direction::UpRight => return (current_point.0 - 1, current_point.1 + 1),
-        Direction::Right => return (current_point.0, current_point.1 + 1),
-        Direction::DownRight => return (current_point.0 + 1, current_point.1 + 1),
-        Direction::Down => return (current_point.0 + 1, current_point.1),
-        Direction::DownLeft => return (current_point.0 + 1, current_point.1 - 1),
-        Direction::Left => return (current_point.0, current_point.1 - 1),
-        Direction::UpLeft => return (current_point.0 - 1, current_point.1 - 1),
-    }
-}
+type WordSearch = Grid<char>;
 
 impl WordSearch {
-    fn find(&self, starting_point: (usize, usize), word: &str) -> Result<usize> {
+    fn search(&self, starting_point: (usize, usize), word: &str) -> Result<usize> {
         let mut total = 0;
         let word: Vec<char> = word.chars().collect();
         // Check the starting point to see if it's valid, and matches the first character of the word
@@ -167,20 +134,7 @@ impl WordSearch {
 
 #[aoc_generator(day4)]
 fn parse_input(input: &str) -> WordSearch {
-    let mut wordsearch = WordSearch {
-        grid: HashMap::new(),
-        size: Dimensions {
-            rows: input.lines().count(),
-            columns: input.lines().nth(0).unwrap().len(),
-        },
-    };
-
-    for (row_index, line) in input.lines().enumerate() {
-        for (column_index, letter) in line.chars().enumerate() {
-            let location = (row_index, column_index);
-            wordsearch.grid.insert(location, letter);
-        }
-    }
+    let wordsearch = WordSearch::new(input);
     wordsearch
 }
 
@@ -192,7 +146,7 @@ fn solve_part1(input: &WordSearch) -> usize {
         for colum_index in 0..input.size.columns {
             let location = (row_index, colum_index);
             // println!("Searching from location {:?}", location);
-            match input.find(location, word) {
+            match input.search(location, word) {
                 Ok(n) => {
                     // println!("Found {n} matches there");
                     total += n;
@@ -228,7 +182,6 @@ fn solve_part2(input: &WordSearch) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     #[test]
     fn test_int_division() {
         assert_eq!(3 / 2, 1);
