@@ -13,6 +13,7 @@ enum Symbol {
     Term(usize),
     Add,
     Multiply,
+    Concat,
 }
 
 #[aoc_generator(day7)]
@@ -32,7 +33,7 @@ fn parse_input(input: &str) -> Vec<TestCase> {
     tests
 }
 
-fn get_equation_permutations(test_case: &TestCase) -> Vec<Vec<Symbol>> {
+fn get_equation_permutations(test_case: &TestCase, operations: &Vec<Symbol>) -> Vec<Vec<Symbol>> {
     let terms: Vec<Symbol> = test_case.inputs.iter().map(|i| Symbol::Term(*i)).collect();
 
     match terms.len() {
@@ -42,9 +43,9 @@ fn get_equation_permutations(test_case: &TestCase) -> Vec<Vec<Symbol>> {
     };
 
     // Generate all possible combinations of operations
-    let operations = [Symbol::Add, Symbol::Multiply];
     let op_combinations = (0..terms.len() - 1)
         .map(|_| operations.iter().cloned())
+        // FIXME: This is pretty slow, even with just 3 items
         .multi_cartesian_product();
 
     // Interleave terms and operations for each combination
@@ -64,8 +65,6 @@ fn get_equation_permutations(test_case: &TestCase) -> Vec<Vec<Symbol>> {
         .collect()
 }
 
-// TODO: Fix me :)
-// Use a deque to pop instead of taking 3 next()s
 fn check_equation(expected: usize, equation: &Vec<Symbol>) -> bool {
     let mut stack: VecDeque<Symbol> = VecDeque::from(equation.clone());
 
@@ -87,15 +86,19 @@ fn check_equation(expected: usize, equation: &Vec<Symbol>) -> bool {
             }
             Symbol::Add => op = Some(Symbol::Add),
             Symbol::Multiply => op = Some(Symbol::Multiply),
+            Symbol::Concat => op = Some(Symbol::Concat),
         }
 
         // Once a full expression has been loaded (term, op, term)
         // Calculate the result, and push it onto the stack.
         if lhs != None && op != None && rhs != None {
             let mut result = 0;
+            let x = lhs.unwrap();
+            let y = rhs.unwrap();
             match op.unwrap() {
-                Symbol::Add => result = lhs.unwrap() + rhs.unwrap(),
-                Symbol::Multiply => result = lhs.unwrap() * rhs.unwrap(),
+                Symbol::Add => result = x + y,
+                Symbol::Multiply => result = x * y,
+                Symbol::Concat => result = concat(x, y),
                 _ => panic!("operation was a term!"),
             }
             let result = Symbol::Term(result);
@@ -124,9 +127,30 @@ fn check_permutations(expected: usize, permutations: Vec<Vec<Symbol>>) -> bool {
 
 #[aoc(day7, part1)]
 fn solve_part1(input: &Vec<TestCase>) -> usize {
+    let allowed_operations = vec![Symbol::Add, Symbol::Multiply];
     let mut total = 0;
     for t in input.iter() {
-        let p = get_equation_permutations(&t);
+        let p = get_equation_permutations(&t, &allowed_operations);
+        // println!("{:?}", p);
+        if check_permutations(t.expected, p) {
+            total += t.expected
+        }
+    }
+    total
+}
+
+fn concat(x: usize, y: usize) -> usize {
+    let z = x.to_string() + y.to_string().as_str();
+    z.parse().expect("failed to coerce usize from {z}")
+}
+
+#[aoc(day7, part2)]
+fn solve_part2(input: &Vec<TestCase>) -> usize {
+    let allowed_operations = vec![Symbol::Add, Symbol::Multiply, Symbol::Concat];
+
+    let mut total = 0;
+    for t in input.iter() {
+        let p = get_equation_permutations(&t, &allowed_operations);
         // println!("{:?}", p);
         if check_permutations(t.expected, p) {
             total += t.expected
