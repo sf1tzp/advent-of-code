@@ -98,3 +98,24 @@ impl Grid<char> {
         None
     }
 }
+
+impl Grid<u8> {
+    pub fn new(input: &str) -> Grid<u8> {
+        let mut g = Grid::<u8> {
+            grid: HashMap::<Location, u8>::new(),
+            size: GridSize {
+                rows: input.lines().count(),
+                columns: input.lines().nth(0).unwrap().len(),
+            },
+        };
+
+        for (row_index, line) in input.lines().enumerate() {
+            for (column_index, letter) in line.chars().enumerate() {
+                let location = Location::new(row_index, column_index);
+                g.grid.insert(location, letter.to_digit(10).unwrap() as u8);
+            }
+        }
+
+        g
+    }
+}
