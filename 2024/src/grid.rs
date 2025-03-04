@@ -1,4 +1,22 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt};
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub struct Location {
+    pub row: usize,
+    pub column: usize,
+}
+
+impl Location {
+    pub fn new(row: usize, column: usize) -> Location {
+        Location { row, column }
+    }
+}
+
+impl fmt::Display for Location {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({},{})", self.row, self.column)
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct GridSize {
@@ -9,7 +27,7 @@ pub struct GridSize {
 #[derive(Clone)]
 pub struct Grid<T> {
     pub size: GridSize,
-    pub grid: HashMap<(usize, usize), T>,
+    pub grid: HashMap<Location, T>,
 }
 
 #[derive(Debug, Clone)]
@@ -24,23 +42,29 @@ pub enum Direction {
     UpLeft,
 }
 
-pub fn get_next_point(direction: &Direction, current_point: (usize, usize)) -> (usize, usize) {
+pub fn get_next_point(direction: &Direction, current_point: Location) -> Location {
     match direction {
-        Direction::Up => return (current_point.0 - 1, current_point.1),
-        Direction::UpRight => return (current_point.0 - 1, current_point.1 + 1),
-        Direction::Right => return (current_point.0, current_point.1 + 1),
-        Direction::DownRight => return (current_point.0 + 1, current_point.1 + 1),
-        Direction::Down => return (current_point.0 + 1, current_point.1),
-        Direction::DownLeft => return (current_point.0 + 1, current_point.1 - 1),
-        Direction::Left => return (current_point.0, current_point.1 - 1),
-        Direction::UpLeft => return (current_point.0 - 1, current_point.1 - 1),
+        Direction::Up => return Location::new(current_point.row - 1, current_point.column),
+        Direction::UpRight => {
+            return Location::new(current_point.row - 1, current_point.column + 1)
+        }
+        Direction::Right => return Location::new(current_point.row, current_point.column + 1),
+        Direction::DownRight => {
+            return Location::new(current_point.row + 1, current_point.column + 1)
+        }
+        Direction::Down => return Location::new(current_point.row + 1, current_point.column),
+        Direction::DownLeft => {
+            return Location::new(current_point.row + 1, current_point.column - 1)
+        }
+        Direction::Left => return Location::new(current_point.row, current_point.column - 1),
+        Direction::UpLeft => return Location::new(current_point.row - 1, current_point.column - 1),
     }
 }
 
 impl Grid<char> {
     pub fn new(input: &str) -> Grid<char> {
         let mut g = Grid::<char> {
-            grid: HashMap::<(usize, usize), char>::new(),
+            grid: HashMap::<Location, char>::new(),
             size: GridSize {
                 rows: input.lines().count(),
                 columns: input.lines().nth(0).unwrap().len(),
@@ -49,7 +73,10 @@ impl Grid<char> {
 
         for (row_index, line) in input.lines().enumerate() {
             for (column_index, letter) in line.chars().enumerate() {
-                let location = (row_index, column_index);
+                let location = Location {
+                    row: row_index,
+                    column: column_index,
+                };
                 g.grid.insert(location, letter);
             }
         }
@@ -60,7 +87,8 @@ impl Grid<char> {
     pub fn find(&self, target: char) -> Option<(usize, usize)> {
         for row_index in 0..self.size.rows {
             for column_index in 0..self.size.columns {
-                if let Some(c) = self.grid.get(&(row_index, column_index)) {
+                let location = Location::new(row_index, column_index);
+                if let Some(c) = self.grid.get(&location) {
                     if target == *c {
                         return Some((row_index, column_index));
                     }

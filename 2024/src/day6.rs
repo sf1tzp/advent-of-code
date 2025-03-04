@@ -4,7 +4,7 @@ use crate::grid::*;
 
 #[derive(Clone)]
 struct Guard {
-    location: (usize, usize),
+    location: Location,
     direction: Direction,
 }
 
@@ -15,7 +15,7 @@ struct Room {
 }
 
 impl Room {
-    fn get_next_guard_location(&mut self) -> Option<(usize, usize)> {
+    fn get_next_guard_location(&mut self) -> Option<Location> {
         let next_point = get_next_point(&self.guard.direction, self.guard.location);
         // Check to see if the next point is on the grid
         match self.grid.grid.get(&next_point) {
@@ -48,7 +48,7 @@ impl fmt::Display for Room {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row_index in 0..self.grid.size.rows {
             for column_index in 0..self.grid.size.columns {
-                let location = (row_index, column_index);
+                let location = Location::new(row_index, column_index);
                 if location == self.guard.location {
                     write!(f, "^")?;
                 } else {
@@ -67,7 +67,7 @@ fn parse_input(input: &str) -> Room {
     let mut room = Room {
         grid: Grid::<char>::new(input),
         guard: Guard {
-            location: (0, 0),
+            location: Location::new(0, 0),
             direction: Direction::Up,
         },
     };
@@ -75,8 +75,8 @@ fn parse_input(input: &str) -> Room {
     // Set the guard's position (todo: maybe do above?)
     match room.grid.find('^') {
         Some((x, y)) => {
-            room.guard.location = (x, y);
-            room.grid.grid.insert((x, y), '.');
+            room.guard.location = Location::new(x, y);
+            room.grid.grid.insert(room.guard.location, '.');
         }
         None => panic!("no guard location found!"),
     };
@@ -87,7 +87,7 @@ fn parse_input(input: &str) -> Room {
 #[aoc(day6, part1)]
 fn solve_part_1(input: &Room) -> usize {
     let mut room: Room = input.clone();
-    let mut visited: HashSet<(usize, usize)> = HashSet::new();
+    let mut visited: HashSet<Location> = HashSet::new();
     // Loop until the guard exits the grid, recording visited spaces
     while let Some(next_point) = room.get_next_guard_location() {
         // println!("{}", room);

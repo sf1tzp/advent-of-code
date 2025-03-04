@@ -10,8 +10,8 @@ use crate::{grid::*, ASCII_DIGITS, ASCII_LOWERCASE, ASCII_UPPERCASE};
 #[derive(Clone)]
 struct Map {
     grid: Grid<char>,
-    antennas: HashMap<(usize, usize), char>,
-    antinodes: HashSet<(usize, usize)>,
+    antennas: HashMap<Location, char>,
+    antinodes: HashSet<Location>,
     frequencies: HashSet<char>,
 }
 
@@ -19,7 +19,7 @@ impl fmt::Display for Map {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row_index in 0..self.grid.size.rows {
             for column_index in 0..self.grid.size.columns {
-                let location = (row_index, column_index);
+                let location = Location::new(row_index, column_index);
                 if let Some(_) = self.antinodes.get(&location) {
                     write!(f, "#")?;
                 } else if let Some(a) = self.antennas.get(&location) {
@@ -35,7 +35,7 @@ impl fmt::Display for Map {
 }
 
 impl Map {
-    fn find_matching_antenna(&self, target: char) -> Vec<(usize, usize)> {
+    fn find_matching_antenna(&self, target: char) -> Vec<Location> {
         self.grid
             .grid
             .keys()
@@ -45,9 +45,9 @@ impl Map {
     }
 
     // Note: Part 2 implementation
-    fn find_antinodes(&mut self, frequency: char) -> Vec<(usize, usize)> {
+    fn find_antinodes(&mut self, frequency: char) -> Vec<Location> {
         let antennas = self.find_matching_antenna(frequency);
-        let mut antinodes: Vec<(usize, usize)> = vec![];
+        let mut antinodes: Vec<Location> = vec![];
         // for each antenna
         for i in 0..antennas.len() {
             let a = antennas[i];
@@ -69,26 +69,22 @@ impl Map {
 
     // Note: Part 2 implementation
     // antinodes appear at points along the line formed by two antenna
-    fn find_antinode_locations(
-        &mut self,
-        first: (usize, usize),
-        second: (usize, usize),
-    ) -> Vec<(usize, usize)> {
+    fn find_antinode_locations(&mut self, first: Location, second: Location) -> Vec<Location> {
         let mut antinodes = Vec::new();
         if first == second {
             return antinodes;
         }
         // determine the "slope" betwen points
-        let dx = second.0 as isize - first.0 as isize;
-        let dy = second.1 as isize - first.1 as isize;
+        let dx = second.row as isize - first.row as isize;
+        let dy = second.column as isize - first.column as isize;
 
         // calculate the distance to the next coordinate
         let step_size = get_step_size(dx.abs() as usize, dy.abs() as usize);
         let step_x = dx / step_size as isize;
         let step_y = dy / step_size as isize;
 
-        let mut x = second.0 as isize;
-        let mut y = second.1 as isize;
+        let mut x = second.row as isize;
+        let mut y = second.column as isize;
 
         // println!("starting at {x},{y}, stepping {step_x},{step_y}");
 
@@ -102,13 +98,14 @@ impl Map {
             //     println!("Found antinode at antenna {a} location {x},{y}");
             // }
 
-            antinodes.push((x as usize, y as usize));
+            let antinode = Location::new(x as usize, y as usize);
+            antinodes.push(antinode);
             x += step_x;
             y += step_y;
         }
 
         for a in antinodes.iter() {
-            self.antinodes.insert((a.0, a.1));
+            self.antinodes.insert(*a);
         }
 
         antinodes
@@ -134,17 +131,17 @@ fn get_step_size(mut a: usize, mut b: usize) -> usize {
 // Note: Part 1 implementation
 // antinodes appear at points along the line formed by two antenna,
 // twice the distance from the first antenna as the second antenna is
-fn find_antinode_location(first: (usize, usize), second: (usize, usize)) -> Option<(usize, usize)> {
+fn find_antinode_location(first: Location, second: Location) -> Option<Location> {
     if first == second {
         return None;
     }
     // determine the "slope" betwen points
-    let dx = second.0 as isize - first.0 as isize;
-    let dy = second.1 as isize - first.1 as isize;
+    let dx = second.row as isize - first.row as isize;
+    let dy = second.column as isize - first.column as isize;
 
     // calculate the antinode coordinate along the line
-    let ax = second.0 as isize + dx;
-    let ay = second.1 as isize + dy;
+    let ax = second.row as isize + dx;
+    let ay = second.column as isize + dy;
 
     // if the point exists in negative space, reject it
     if ax < 0 || ay < 0 {
@@ -152,12 +149,12 @@ fn find_antinode_location(first: (usize, usize), second: (usize, usize)) -> Opti
     }
 
     // convert back to usize and return
-    Some((ax as usize, ay as usize))
+    Some(Location::new(ax as usize, ay as usize))
 }
 
 // Note: Part 1 implementation
-fn find_antinodes(antenna: Vec<(usize, usize)>) -> Vec<(usize, usize)> {
-    let mut antinodes: Vec<Option<(usize, usize)>> = vec![];
+fn find_antinodes(antenna: Vec<Location>) -> Vec<Location> {
+    let mut antinodes: Vec<Option<Location>> = vec![];
     // for each antenna
     for i in 0..antenna.len() {
         let a = antenna[i];
@@ -199,7 +196,7 @@ fn parse_input(input: &str) -> Map {
 #[aoc(day8, part1)]
 fn sovle_part1(input: &Map) -> usize {
     let map = input;
-    let mut antinodes: Vec<(usize, usize)> = vec![];
+    let mut antinodes: Vec<Location> = vec![];
     for f in map.frequencies.iter() {
         // println!("finding antinodes for frequency {f}");
         let antennas = map.find_matching_antenna(*f);
@@ -220,7 +217,7 @@ fn sovle_part1(input: &Map) -> usize {
 #[aoc(day8, part2)]
 fn solve_part2(input: &Map) -> usize {
     let mut map = input.clone();
-    let mut antinodes: Vec<(usize, usize)> = vec![];
+    let mut antinodes: Vec<Location> = vec![];
     for f in input.frequencies.iter() {
         antinodes.extend(map.find_antinodes(*f));
     }

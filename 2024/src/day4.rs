@@ -1,11 +1,11 @@
-use crate::grid::{get_next_point, Direction, Grid};
+use crate::grid::*;
 
 use anyhow::{anyhow, Result};
 
 type WordSearch = Grid<char>;
 
 impl WordSearch {
-    fn search(&self, starting_point: (usize, usize), word: &str) -> Result<usize> {
+    fn search(&self, starting_point: Location, word: &str) -> Result<usize> {
         let mut total = 0;
         let word: Vec<char> = word.chars().collect();
         // Check the starting point to see if it's valid, and matches the first character of the word
@@ -28,35 +28,35 @@ impl WordSearch {
         };
 
         // search up
-        if self.search_direction(Direction::Up, starting_point, &word) {
+        if self.search_direction(Direction::Up, &starting_point, &word) {
             total += 1;
         }
         // search up-right
-        if self.search_direction(Direction::UpRight, starting_point, &word) {
+        if self.search_direction(Direction::UpRight, &starting_point, &word) {
             total += 1;
         }
         // search right
-        if self.search_direction(Direction::Right, starting_point, &word) {
+        if self.search_direction(Direction::Right, &starting_point, &word) {
             total += 1;
         }
         // search down-right
-        if self.search_direction(Direction::DownRight, starting_point, &word) {
+        if self.search_direction(Direction::DownRight, &starting_point, &word) {
             total += 1;
         }
         // search down
-        if self.search_direction(Direction::Down, starting_point, &word) {
+        if self.search_direction(Direction::Down, &starting_point, &word) {
             total += 1;
         }
         // search down-left
-        if self.search_direction(Direction::DownLeft, starting_point, &word) {
+        if self.search_direction(Direction::DownLeft, &starting_point, &word) {
             total += 1;
         }
         // search left
-        if self.search_direction(Direction::Left, starting_point, &word) {
+        if self.search_direction(Direction::Left, &starting_point, &word) {
             total += 1;
         }
         // search up-left
-        if self.search_direction(Direction::UpLeft, starting_point, &word) {
+        if self.search_direction(Direction::UpLeft, &starting_point, &word) {
             total += 1;
         }
 
@@ -66,10 +66,10 @@ impl WordSearch {
     fn search_direction(
         &self,
         direction: Direction,
-        starting_point: (usize, usize),
+        starting_point: &Location,
         word: &Vec<char>,
     ) -> bool {
-        let mut current_point = starting_point;
+        let mut current_point = starting_point.clone();
 
         for i in 0..word.len() {
             match self.grid.get(&current_point) {
@@ -89,7 +89,7 @@ impl WordSearch {
         true
     }
 
-    fn find_cross(&self, starting_point: (usize, usize), word: &str) -> Result<bool> {
+    fn find_cross(&self, starting_point: Location, word: &str) -> Result<bool> {
         let mut total = 0;
         let word: Vec<char> = word.chars().collect();
 
@@ -109,22 +109,22 @@ impl WordSearch {
 
         // move to top right and search down-left
         let p = get_next_point(&Direction::UpRight, starting_point);
-        if self.search_direction(Direction::DownLeft, p, &word) {
+        if self.search_direction(Direction::DownLeft, &p, &word) {
             total += 1;
         }
         // move to top left and search down-right
         let p = get_next_point(&Direction::UpLeft, starting_point);
-        if self.search_direction(Direction::DownRight, p, &word) {
+        if self.search_direction(Direction::DownRight, &p, &word) {
             total += 1;
         }
         // move to bottom right and search up-left
         let p = get_next_point(&Direction::DownRight, starting_point);
-        if self.search_direction(Direction::UpLeft, p, &word) {
+        if self.search_direction(Direction::UpLeft, &p, &word) {
             total += 1;
         }
         // move to bottom left and search up-right
         let p = get_next_point(&Direction::DownLeft, starting_point);
-        if self.search_direction(Direction::UpRight, p, &word) {
+        if self.search_direction(Direction::UpRight, &p, &word) {
             total += 1;
         }
 
@@ -144,7 +144,7 @@ fn solve_part1(input: &WordSearch) -> usize {
     let word = "XMAS";
     for row_index in 0..input.size.rows {
         for colum_index in 0..input.size.columns {
-            let location = (row_index, colum_index);
+            let location = Location::new(row_index, colum_index);
             // println!("Searching from location {:?}", location);
             match input.search(location, word) {
                 Ok(n) => {
@@ -164,7 +164,7 @@ fn solve_part2(input: &WordSearch) -> usize {
     let word = "MAS";
     for row_index in 0..input.size.rows {
         for colum_index in 0..input.size.columns {
-            let location = (row_index, colum_index);
+            let location = Location::new(row_index, colum_index);
 
             // println!("Searching from location {:?}", location);
             match input.find_cross(location, word) {
