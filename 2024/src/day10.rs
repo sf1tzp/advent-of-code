@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::{
+    collections::{HashMap, HashSet, VecDeque},
+    vec,
+};
 
 use crate::grid::*;
 
@@ -50,6 +53,85 @@ impl TopographicMap {
 
         false
     }
+
+    // dfs with parent pointer map for path reconstruction
+    fn count_of_trails(&self, start: Location, end: Location) -> usize {
+        let mut trails = Vec::new();
+        let mut parent_map: HashMap<Location, Location> = HashMap::new();
+        let mut global_visited: HashSet<Location> = HashSet::from([start]);
+
+        struct SearchState {
+            current_point: Location,
+            direction_index: usize,
+        }
+        let directions = [
+            Direction::Up,
+            Direction::Right,
+            Direction::Down,
+            Direction::Left,
+        ];
+
+        let mut search_stack: VecDeque<SearchState> = VecDeque::new();
+        search_stack.push_back(SearchState {
+            current_point: start,
+            direction_index: 0,
+        });
+
+        while !search_stack.is_empty() {
+            let s = search_stack.pop_front().unwrap();
+
+            if s.direction_index >= directions.len() {
+                // We're done with this point, remove from visited for backtracking
+                global_visited.remove(&s.current_point);
+                continue;
+            }
+
+            // Queue up next direction to try
+            search_stack.push_front(SearchState {
+                current_point: s.current_point,
+                direction_index: s.direction_index + 1,
+            });
+
+            let next_point = get_next_point(&directions[s.direction_index], s.current_point);
+
+            if global_visited.contains(&next_point) {
+                continue;
+            }
+
+            if let Some(next_height) = self.grid.grid.get(&next_point) {
+                let current_height = self.grid.grid.get(&s.current_point).unwrap();
+                if *next_height == current_height + 1 {
+                    parent_map.insert(next_point, s.current_point);
+                    global_visited.insert(next_point);
+
+                    if next_point == end {
+                        // Reconstruct path for the solution
+                        let mut path = vec![next_point];
+                        let mut current = next_point;
+                        while current != start {
+                            current = parent_map[&current];
+                            path.push(current);
+                        }
+                        path.reverse();
+                        trails.push(path);
+
+                        // Remove this point from visited to allow other paths
+                        global_visited.remove(&next_point);
+                        parent_map.remove(&next_point);
+                        continue;
+                    }
+
+                    // Queue next point
+                    search_stack.push_front(SearchState {
+                        current_point: next_point,
+                        direction_index: 0,
+                    });
+                }
+            }
+        }
+
+        trails.len()
+    }
 }
 
 #[aoc_generator(day10)]
@@ -88,6 +170,22 @@ fn solve_part1(input: &TopographicMap) -> usize {
         }
     }
     // println!("scores {:?}", scores);
+
+    scores.values().sum()
+}
+
+#[aoc(day10, part2)]
+fn solve_part2(input: &TopographicMap) -> usize {
+    let mut scores = HashMap::<Location, usize>::new();
+    for s in &input.starting_points {
+        for p in &input.peaks {
+            let score = input.count_of_trails(*s, *p);
+            scores
+                .entry(*s)
+                .and_modify(|x| *x += score)
+                .or_insert(score);
+        }
+    }
 
     scores.values().sum()
 }
