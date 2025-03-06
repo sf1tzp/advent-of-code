@@ -92,15 +92,14 @@ fn check_equation(expected: usize, equation: &Vec<Symbol>) -> bool {
         // Once a full expression has been loaded (term, op, term)
         // Calculate the result, and push it onto the stack.
         if lhs != None && op != None && rhs != None {
-            let mut result = 0;
             let x = lhs.unwrap();
             let y = rhs.unwrap();
-            match op.unwrap() {
-                Symbol::Add => result = x + y,
-                Symbol::Multiply => result = x * y,
-                Symbol::Concat => result = concat(x, y),
+            let result = match op.unwrap() {
+                Symbol::Add => x + y,
+                Symbol::Multiply => x * y,
+                Symbol::Concat => concat(x, y),
                 _ => panic!("operation was a term!"),
-            }
+            };
             let result = Symbol::Term(result);
             stack.push_front(result);
 
