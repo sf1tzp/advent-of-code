@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 fn count_digits(mut i: usize) -> usize {
     if i == 0 {
         return 1;
@@ -11,18 +13,18 @@ fn count_digits(mut i: usize) -> usize {
 }
 
 fn process(i: usize) -> Vec<usize> {
-    if i == 0 {
-        return vec![1];
-    }
     let digits = count_digits(i);
     if digits % 2 == 0 {
         // split the number at the 'halfway point'
         let divisor = 10usize.pow(digits as u32 / 2);
         let lhs = i / divisor;
         let rhs = i % divisor;
-        return vec![lhs, rhs];
+        vec![lhs, rhs]
+    } else if i == 0 {
+        vec![1]
+    } else {
+        vec![i * 2024]
     }
-    return vec![i * 2024];
 }
 
 #[aoc_generator(day11)]
@@ -37,10 +39,37 @@ fn parse_input(input: &str) -> Vec<usize> {
 fn solve_part1(input: &Vec<usize>) -> usize {
     let mut rocks = input.clone();
     for _ in 0..25 {
+        // Too slow and memory intensive for large lists...
         rocks = rocks.iter().map(|x| process(*x)).flatten().collect();
-        // println!("{:?}", rocks);
     }
     rocks.len()
+}
+
+// Loop through the input counter
+// process each stone - the result doesn't change for the same input
+// so we'll increment the output counter by n for each result
+fn update_counts(input: HashMap<usize, usize>) -> HashMap<usize, usize> {
+    let mut output = HashMap::new();
+    for (stone, n) in input {
+        for result in process(stone) {
+            output.entry(result).and_modify(|x| *x += n).or_insert(n);
+        }
+    }
+    output
+}
+
+#[aoc(day11, part2)]
+fn solve_part2(input: &Vec<usize>) -> usize {
+    // Since order doesn't actually matter, we'll simply keep track of how many times we each number
+    let mut counter = HashMap::new();
+    for i in input {
+        counter.entry(*i).or_insert(1);
+    }
+
+    for _ in 0..75 {
+        counter = update_counts(counter);
+    }
+    counter.values().sum()
 }
 
 #[cfg(test)]
