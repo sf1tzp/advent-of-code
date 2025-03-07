@@ -1,4 +1,4 @@
-# [🎄 Advent of Code 🖥 2022 🎁][advent-of-code-link]
+# [🎄 Advent of Code 🖥 🎁][advent-of-code-link]
 
 It's that time of year again! 🎁 🖥 🎄
 
@@ -13,15 +13,15 @@ You must set the `AOC_SESSION_TOKEN` environment variable in order to download i
 This project uses [`cargo-aoc`][cargo-aoc-link] to run and benchmark solutions. The included [`justfile`][just-link] contains shortcuts for most commands in `bash`.
 
 ```
-Advent of Code 2022 Commands
-    login             # Login to Advent of Code (Use AOC_SESSION_TOKEN environment variable)
-    new DAY           # Start a new solution for day number DAY
-    run DAY           # Run the solution for day number DAY
-    run-sample DAY    # Run a solution with a sample input file (place in `samples/2022/day{{DAY}}.txt`)
-    run-benchmark DAY # Benchmark the solution for day number DAY
+Advent of Code Commands
+    login                  # Login to Advent of Code (Use AOC_SESSION_TOKEN environment variable)
+    new YEAR DAY           # Start a new solution for year YEAR day number DAY
+    run YEAR DAY           # Run the solution for year YEAR day number DAY
+    run-sample YEAR DAY    # Run a solution with a sample input file (place in `samples/{{YEAR}}/day{{DAY}}.txt`)
+    run-benchmark YEAR DAY # Benchmark the solution for year YEAR day number DAY
 ```
 
-[advent-of-code-link]: https://adventofcode.com/2022/
+[advent-of-code-link]: https://adventofcode.com/
 [cargo-aoc-link]: https://github.com/gobanos/cargo-aoc
 [just-link]: https://github.com/casey/just
 
@@ -29,6 +29,8 @@ Advent of Code 2022 Commands
 ## Benchmarks
 
 `cargo-aoc` benchmarks `generator` functions, which parse the project input, and `solution` functions, which contain the actual problem solving logic.
+
+### 2022
 
 | Day | Generator | Part 1                             | Part 2     |
 | --- | --------- | ---------------------------------- | ---------- |
@@ -45,3 +47,8 @@ Advent of Code 2022 Commands
 | 11  | 1.0665 ms | 30.342 µs                          | 13.337 ms  |
 | 12  | 242.74 µs | 2.1069 ms (priority queue)         | 294.280 ms |
 | 13  | 2.4084 ms | 7.5608 µs                          | 226.06 µs  |
+
+### 2024
+
+| Day | Generator | Part 1                             | Part 2     |
+| --- | --------- | ---------------------------------- | ---------- |
