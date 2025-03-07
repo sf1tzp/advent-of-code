@@ -24,6 +24,7 @@ impl Room {
                 '.' => return Some(next_point),
                 '#' => {
                     match self.guard.direction {
+                        // When the guard faces an obstacle, they turn to the right
                         Direction::Up => self.guard.direction = Direction::Right,
                         Direction::Right => self.guard.direction = Direction::Down,
                         Direction::Down => self.guard.direction = Direction::Left,

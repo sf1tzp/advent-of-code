@@ -24,12 +24,7 @@ impl TopographicMap {
                 }
 
                 if let Some(current_height) = self.grid.grid.get(&current_location) {
-                    for d in [
-                        Direction::Up,
-                        Direction::Right,
-                        Direction::Down,
-                        Direction::Left,
-                    ] {
+                    for d in CARDINAL_DIRECTIONS {
                         let next_location = get_next_point(&d, current_location);
 
                         if visited.contains(&next_location) {
@@ -64,12 +59,6 @@ impl TopographicMap {
             current_point: Location,
             direction_index: usize,
         }
-        let directions = [
-            Direction::Up,
-            Direction::Right,
-            Direction::Down,
-            Direction::Left,
-        ];
 
         let mut search_stack: VecDeque<SearchState> = VecDeque::new();
         search_stack.push_back(SearchState {
@@ -80,7 +69,7 @@ impl TopographicMap {
         while !search_stack.is_empty() {
             let s = search_stack.pop_front().unwrap();
 
-            if s.direction_index >= directions.len() {
+            if s.direction_index >= CARDINAL_DIRECTIONS.len() {
                 // We're done with this point, remove from visited for backtracking
                 global_visited.remove(&s.current_point);
                 continue;
@@ -92,7 +81,8 @@ impl TopographicMap {
                 direction_index: s.direction_index + 1,
             });
 
-            let next_point = get_next_point(&directions[s.direction_index], s.current_point);
+            let next_point =
+                get_next_point(&CARDINAL_DIRECTIONS[s.direction_index], s.current_point);
 
             if global_visited.contains(&next_point) {
                 continue;

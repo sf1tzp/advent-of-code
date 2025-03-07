@@ -30,7 +30,7 @@ pub struct Grid<T> {
     pub grid: HashMap<Location, T>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum Direction {
     Up,
     UpRight,
@@ -41,6 +41,13 @@ pub enum Direction {
     Left,
     UpLeft,
 }
+
+pub static CARDINAL_DIRECTIONS: [Direction; 4] = [
+    Direction::Up,
+    Direction::Down,
+    Direction::Left,
+    Direction::Right,
+];
 
 pub fn get_next_point(direction: &Direction, current_point: Location) -> Location {
     match direction {
