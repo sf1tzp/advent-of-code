@@ -39,7 +39,7 @@ impl Map {
         self.grid
             .grid
             .keys()
-            .filter(|location| self.grid.grid.get(location).map_or(false, |a| *a == target))
+            .filter(|location| self.grid.get(**location).map_or(false, |a| a == target))
             .cloned()
             .collect()
     }
@@ -210,7 +210,7 @@ fn sovle_part1(input: &Map) -> usize {
     antinodes
         .iter()
         .unique()
-        .filter(|x| map.grid.grid.get(x).is_some())
+        .filter(|x| map.grid.get(**x).is_some())
         .count()
 }
 

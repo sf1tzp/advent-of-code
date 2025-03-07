@@ -23,7 +23,7 @@ impl TopographicMap {
                     return true;
                 }
 
-                if let Some(current_height) = self.grid.grid.get(&current_location) {
+                if let Some(current_height) = self.grid.get(current_location) {
                     for d in CARDINAL_DIRECTIONS {
                         let next_location = get_next_point(&d, current_location);
 
@@ -31,11 +31,11 @@ impl TopographicMap {
                             continue;
                         }
 
-                        match self.grid.grid.get(&next_location) {
+                        match self.grid.get(next_location) {
                             None => {}
                             Some(next_height) => {
                                 // In this scenario, only points where hight increases by 1 are valid
-                                if *next_height == current_height + 1 {
+                                if next_height == current_height + 1 {
                                     visited.insert(next_location);
                                     queue.push_back(next_location);
                                 }
@@ -88,9 +88,9 @@ impl TopographicMap {
                 continue;
             }
 
-            if let Some(next_height) = self.grid.grid.get(&next_point) {
-                let current_height = self.grid.grid.get(&s.current_point).unwrap();
-                if *next_height == current_height + 1 {
+            if let Some(next_height) = self.grid.get(next_point) {
+                let current_height = self.grid.get(s.current_point).unwrap();
+                if next_height == current_height + 1 {
                     parent_map.insert(next_point, s.current_point);
                     global_visited.insert(next_point);
 

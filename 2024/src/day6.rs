@@ -18,7 +18,7 @@ impl Room {
     fn get_next_guard_location(&mut self) -> Option<Location> {
         let next_point = get_next_point(&self.guard.direction, self.guard.location);
         // Check to see if the next point is on the grid
-        match self.grid.grid.get(&next_point) {
+        match self.grid.get(next_point) {
             // if it is, see if it is an unnocupied space '.' or if the guard needs to turn '#'
             Some(c) => match c {
                 '.' => return Some(next_point),
@@ -53,7 +53,7 @@ impl fmt::Display for Room {
                 if location == self.guard.location {
                     write!(f, "^")?;
                 } else {
-                    let c = self.grid.grid.get(&location).unwrap();
+                    let c = self.grid.get(location).unwrap();
                     write!(f, "{}", c)?;
                 }
             }

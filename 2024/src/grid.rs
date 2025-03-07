@@ -104,6 +104,10 @@ impl Grid<char> {
         }
         None
     }
+
+    pub fn get(&self, target: Location) -> Option<char> {
+        self.grid.get(&target).copied()
+    }
 }
 
 impl Grid<u8> {
@@ -124,5 +128,8 @@ impl Grid<u8> {
         }
 
         g
+    }
+    pub fn get(&self, target: Location) -> Option<u8> {
+        self.grid.get(&target).copied()
     }
 }
