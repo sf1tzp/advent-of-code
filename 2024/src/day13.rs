@@ -104,6 +104,28 @@ fn solve_part1(input: &Vec<Machine>) -> isize {
     count
 }
 
+#[aoc(day13, part2)]
+fn solve_part2(input: &Vec<Machine>) -> isize {
+    let mut count = 0;
+    for machine in input {
+        let offset = 10000000000000;
+        let machine = Machine {
+            a_button: machine.a_button,
+            b_button: machine.b_button,
+            prize_location: (
+                machine.prize_location.0 + offset,
+                machine.prize_location.1 + offset,
+            ),
+        };
+        if let Some(result) = solve(&machine) {
+            count += result.0 * 3;
+            count += result.1;
+        }
+    }
+
+    count
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
